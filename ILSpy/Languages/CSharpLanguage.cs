@@ -266,8 +266,14 @@ namespace ICSharpCode.ILSpy
 		{
 			AddReferenceWarningMessage(type.Module.Assembly, output);
 			WriteCommentLine(output, TypeToString(type, includeNamespace: true));
+			output.WriteLine("namespace " + type.Namespace);
+			output.WriteLine("{");
+			output.Indent();
 			CSharpDecompiler decompiler = CreateDecompiler(type.Module, options);
 			WriteCode(output, options.DecompilerSettings, decompiler.Decompile(type), decompiler.TypeSystem);
+			output.Unindent();
+			output.WriteLine("}");			
+			output.WriteLine("");
 		}
 
 		public static string GetPlatformDisplayName(ModuleDefinition module)

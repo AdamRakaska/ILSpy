@@ -679,10 +679,39 @@ namespace ICSharpCode.ILSpy.TextView
 		/// </summary>
 		void SaveToDisk(DecompilationContext context, string fileName)
 		{
+			textEditor.Clear();
+
+			TaskCompletionSource<AvalonEditTextOutput> tcs = new TaskCompletionSource<AvalonEditTextOutput>();
+
 			RunWithCancellation(
 				delegate (CancellationToken ct) {
 					context.Options.CancellationToken = ct;
-					return SaveToDiskAsync(context, fileName);
+
+					try {
+						var language = context.Language;
+						var options = context.Options;
+
+						AvalonEditTextOutput output = new AvalonEditTextOutput();
+
+						string path = Path.GetDirectoryName(fileName);
+
+						char[] invalidPathCharacters = Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).Distinct().ToArray();
+
+						foreach (ILSpyTreeNode node in context.TreeNodes) {
+							string sanitized = new string(node.Text.ToString().Replace("<", "-").Replace(">", "-").Where(c => !invalidPathCharacters.Contains(c)).ToArray());
+
+							string fn = Path.Combine(path, $"{sanitized}.cs");
+
+							AvalonEditTextOutput saveOutput = SaveToDiskAsync(new DecompilationContext(language, new ILSpyTreeNode[] { node }, options), fn).Result;
+
+							output.WriteLine(saveOutput.GetDocument().Text);
+						}
+
+						tcs.SetResult(output);
+					} catch (OperationCanceledException) {
+						tcs.SetCanceled();
+					}
+					return tcs.Task;
 				})
 				.Then(output => ShowOutput(output))
 				.Catch((Exception ex) => {

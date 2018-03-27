@@ -752,7 +752,10 @@ namespace ICSharpCode.ILSpy
 		#region Decompile (TreeView_SelectionChanged)
 		void TreeView_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			DecompileSelectedNodes();
+			if (treeView.SelectedItems.Count == 1)
+			{
+				DecompileSelectedNodes();
+			}
 
 			if (SelectionChanged != null)
 				SelectionChanged(sender, e);

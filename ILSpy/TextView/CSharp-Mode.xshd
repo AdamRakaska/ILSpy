@@ -56,6 +56,12 @@
 			<Word>UNDONE</Word>
 		</Keywords>
 	</RuleSet>
+
+	<RuleSet name="NamespaceMarker">
+		<Keywords foreground="Green">
+			<Word>namespace</Word>
+		</Keywords>
+	</RuleSet>
 	
 	<!-- This is the main ruleset. -->
 	<RuleSet>
